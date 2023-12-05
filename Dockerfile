@@ -1,4 +1,4 @@
-FROM php:8.2.12-fpm-alpine
+FROM php:8.2.13-fpm-alpine
 
 ENV TZ=UTC
 
@@ -13,6 +13,8 @@ RUN apk add mariadb-client ca-certificates postgresql-dev libssh-dev zip libzip-
 RUN apk add freetype-dev libjpeg-turbo-dev libpng-dev jpeg-dev libwebp-dev
 
 RUN apk add supervisor bash curl unzip git
+
+RUN apk add --no-cache $PHPIZE_DEPS && pecl install xdebug-3.3 && docker-php-ext-enable xdebug
 
 # Install extensions
 RUN chmod +x /usr/local/bin/install-php-extensions && \
