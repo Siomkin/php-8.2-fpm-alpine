@@ -1,4 +1,4 @@
-FROM php:8.2.13-fpm-alpine
+FROM php:8.2.14-fpm-alpine
 
 ENV TZ=UTC
 
@@ -15,7 +15,7 @@ RUN apk add freetype-dev libjpeg-turbo-dev libpng-dev jpeg-dev libwebp-dev
 RUN apk add supervisor bash curl unzip git
 
 RUN apk add --update linux-headers
-RUN apk add --no-cache $PHPIZE_DEPS && pecl install xdebug-3.3.0 && docker-php-ext-enable xdebug
+RUN apk add php8-pecl-xdebug
 
 # Install extensions
 RUN chmod +x /usr/local/bin/install-php-extensions && \
