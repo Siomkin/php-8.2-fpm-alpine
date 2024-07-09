@@ -1,4 +1,4 @@
-FROM php:8.2.14-fpm-alpine
+FROM php:8.2.21-fpm-alpine
 
 ENV TZ=UTC
 
