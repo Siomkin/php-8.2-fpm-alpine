@@ -2,17 +2,15 @@ name: 8.2-fpm-alpine Docker Image CI
 
 on:
   push:
-    # Publish as Docker `latest` image.
-    branches: [ latest ]
-    # Publish `v1.2.3` tags as releases.
     tags:
       - v*
+
 env:
   IMAGE_NAME: siomkin/8.2-fpm-alpine
 
 jobs:
   build:
-
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
     steps:
@@ -21,9 +19,7 @@ jobs:
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "$default-branch" ] && VERSION=latest
+          VERSION=$(echo $VERSION | sed -e 's/^v//')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - uses: actions/checkout@v3
@@ -39,48 +35,14 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Build and push Docker image
+    - name: Build and push Docker images
       uses: docker/build-push-action@v4
       with:
         context: .
         file: Dockerfile
-        tags: ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache
-
-  tag:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Set version
-      run: |
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "$default-branch" ] && VERSION=latest
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-    - uses: actions/checkout@v3
-
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        file: Dockerfile
-        tags: ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+        push: true
+        tags: |
+          ${{ env.IMAGE_NAME }}:latest
+          ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
